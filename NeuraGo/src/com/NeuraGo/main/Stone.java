@@ -35,8 +35,7 @@ public class Stone extends RenderObject
         if(color)
         {
             this.col = new Color(255, 255, 255, trans);
-            String path = new File("").getAbsolutePath();
-            path += "/res/Textures/Board/StonesW/S1.png";
+            String path = FileLoader.getPath(new String[]{"res", "Textures", "Board", "StonesW", "S1.png"});
             try {
                 File fl = new File(path);
                 stoneImage = ImageIO.read(fl);
@@ -50,8 +49,7 @@ public class Stone extends RenderObject
         else
         {
             this.col = new Color(0, 0, 0, trans);
-            String path = new File("").getAbsolutePath();
-            path += "/res/Textures/Board/StonesB/S1.png";
+            String path = FileLoader.getPath(new String[]{"res", "Textures", "Board", "StonesB", "S1.png"});
             try {
                 File fl = new File(path);
                 stoneImage = ImageIO.read(fl);

@@ -21,7 +21,7 @@ public class GoBoard extends RenderObject implements Button
     private Image kaz;
     private Stone previewStone;
     private Board mainBoard;
-    private boolean stoneColor;
+    private boolean stoneColor, playerColor, tutorial;
 
     public GoBoard(float x, float y, float w, float h, int d, float lw, float ot, float ps, Board board)
     {
@@ -36,13 +36,14 @@ public class GoBoard extends RenderObject implements Button
         previewStone = null;
         mainBoard = board;
         stoneColor = false;
+        playerColor = false;
+        tutorial = false;
 
         previewStone = new Stone(0, 0, 10, false, 0);
 
         try
         {
-            String path =  new File("").getAbsolutePath();
-            path += "/res/Textures/Board/Board";
+            String path = FileLoader.getPath(new String[]{"res", "Textures", "Board", "Board"});
             File fl = new File(path);
             kaz = ImageIO.read(fl);
         }
@@ -106,6 +107,16 @@ public class GoBoard extends RenderObject implements Button
         }
     }
 
+    public void SetPlayerColor(boolean x)
+    {
+        playerColor = x;
+    }
+
+    public void SetTutorial(boolean x)
+    {
+        tutorial = x;
+    }
+
     public void SetStoneColor(boolean color)
     {
         this.stoneColor = color;
@@ -138,7 +149,7 @@ public class GoBoard extends RenderObject implements Button
         float sz = width/(float)(dimension-1);
         int i = (int)((x-posX+width/2f+sz/2f) / sz), j = (int)((y-posY+height/2f+sz/2f) / sz);
         float nx = posX-width/2f + sz*i, ny = posY-height/2f + sz*j;
-        if(mainBoard.IsOccupied(i, j)) {
+        if(mainBoard.IsOccupied(i, j) || (!tutorial && stoneColor != playerColor)) {
             previewStone.visible = false;
         }
         else {
@@ -153,6 +164,8 @@ public class GoBoard extends RenderObject implements Button
 
     public void OnClick(float x, float y)
     {
+        if(!tutorial && stoneColor != playerColor)
+            return;
         float sz = width/(float)(dimension-1);
         int i = (int)((x-posX+width/2f+sz/2f) / sz), j = (int)((y-posY+height/2f+sz/2f) / sz);
 

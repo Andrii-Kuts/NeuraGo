@@ -1,6 +1,8 @@
 package com.NeuraGo.main;
 
-public class MainGameScript
+import java.awt.*;
+
+public class MainGameScript extends Canvas
 {
 
     public static void main(String[] args)

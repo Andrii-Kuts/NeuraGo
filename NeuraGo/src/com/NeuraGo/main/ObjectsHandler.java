@@ -67,8 +67,16 @@ public class ObjectsHandler
         //if(msk != 0)
           //  System.out.println("----");
         boolean used = false;
-        for(RenderObject ro : objects)
+        Iterator<RenderObject> itr = objects.descendingIterator();
+        while(itr.hasNext())
         {
+            RenderObject ro = itr.next();
+            if(!ro.visible)
+            {
+                if(ro instanceof Button)
+                    ((Button)ro).OnMouseLeave();
+                continue;
+            }
            // if(msk != 0)
             //    System.out.println(ro.renderPriority);
             if(ro instanceof Button)

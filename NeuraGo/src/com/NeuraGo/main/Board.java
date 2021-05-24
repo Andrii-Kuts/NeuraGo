@@ -1,11 +1,13 @@
 package com.NeuraGo.main;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferStrategy;
+import java.io.File;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -31,11 +33,31 @@ public class Board extends Canvas implements WindowScript
     private int WIDTH = 1600, HEIGHT = 900, BOARD_DIMENSION = 19;
     public final float KOMI = 7.5f;
 
-    public Board(Window window, int width, int height, int dim)
+    private GoBot currentBot = null;
+
+    private Image background;
+    private void loadBackground()
+    {
+        String path = FileLoader.getPath(new String[]{"res", "Textures", "Background.png"});
+        try {
+            File fl = new File(path);
+            background = ImageIO.read(fl);
+            float mx = Math.max((float)WIDTH, (float)HEIGHT*16f/9f);
+            background = background.getScaledInstance((int)mx, (int)(mx*9f/16f), Image.SCALE_DEFAULT);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public Board(Window window, int width, int height, int dim, int botId, int specCol)
     {
         WIDTH = width;
         HEIGHT = height;
         BOARD_DIMENSION = dim;
+
+        loadBackground();
 
         // Create Object Handler
         objectsHandler = new ObjectsHandler();
@@ -45,14 +67,42 @@ public class Board extends Canvas implements WindowScript
 
 
         // Create the go board
-        goBoard = new GoBoard(WIDTH/2, HEIGHT/2, (float)HEIGHT * 0.9f, (float)HEIGHT * 0.9f, BOARD_DIMENSION, 2f, 30, 7, this);
+        goBoard = new GoBoard(WIDTH / 2, HEIGHT / 2, (float) HEIGHT * 0.9f, (float) HEIGHT * 0.9f, BOARD_DIMENSION, 2f, 30, 7, this);
         objectsHandler.AddObject(goBoard);
 
         float butSize = HEIGHT / 20f;
-        MenuButton menuButton = new MenuButton(WIDTH - butSize*2f, butSize*1.5f, butSize*2f, butSize);
-        menuButton.fontSize = (int)(butSize/2f); menuButton.text = "Menu";
+        MenuButton menuButton = new MenuButton(WIDTH - butSize * 2f, butSize * 1.5f, butSize * 2f, butSize);
+        menuButton.fontSize = (int) (butSize / 2f);
+        menuButton.text = "Menu";
         menuButton.action = () -> GoToMenu();
         objectsHandler.AddObject(menuButton);
+
+        tutorialMenu = new ArrayList<>();
+
+        for (int i = 0; i < 3; i++) {
+            MenuButton but = new MenuButton(WIDTH - butSize * 2f, butSize * (4f + 2.5f * i), butSize * 1.75f, butSize * 1.75f);
+            but.fontSize = (int) (butSize / 2f);
+            switch (i) {
+                case 0:
+                    but.text = "B";
+                    but.SetColors(MenuButton.ButtonColorProfile.Black);
+                    but.action = () -> SetBlackPlacing();
+                    break;
+                case 1:
+                    but.text = "W";
+                    but.SetColors(MenuButton.ButtonColorProfile.Default);
+                    but.action = () -> SetWhitePlacing();
+                    break;
+                case 2:
+                    but.text = "A";
+                    but.SetColors(MenuButton.ButtonColorProfile.Red);
+                    but.action = () -> SetAlternating();
+                    break;
+            }
+            but.visible = false;
+            objectsHandler.AddObject(but);
+            tutorialMenu.add(but);
+        }
 
         // Create array go board representation
         field = new int[BOARD_DIMENSION][BOARD_DIMENSION];
@@ -62,9 +112,36 @@ public class Board extends Canvas implements WindowScript
         boardPositions = new LinkedHashSet<>();
         boardPositions.add(new BoardPosition(BOARD_DIMENSION));
 
-        scoreB = 0; scoreW = KOMI;
+        scoreB = 0;
+        scoreW = KOMI;
         prisonersW = prisonersB = 0;
         gameMoves = new ArrayList<>();
+        stonePlacing = StonePlacementType.Alternate;
+
+        isTutorial = false;
+
+        if (botId == 0)
+        {
+            currentBot = new RandomBot(this);
+        }
+        else
+        {
+            SetTutorial(true);
+        }
+
+        if(specCol == 1)
+            yourColor = false;
+        else if(specCol == 2)
+            yourColor = true;
+        else
+        {
+            yourColor = new Random().nextBoolean();
+        }
+
+        goBoard.SetPlayerColor(yourColor);
+        goBoard.SetTutorial(isTutorial);
+
+
 
         UpdatePremoves();
         UpdateMarks();
@@ -125,7 +202,7 @@ public class Board extends Canvas implements WindowScript
         double ns = 1000000000 / amountOfTicks;
         double delta = 0;
         long timer = System.currentTimeMillis();
-        int frames = 0, maxFps = 80;
+        int frames = 0, maxFps = 60;
         double lastRender = 0, spac = 1000/maxFps;
 
         while(isRunning)
@@ -209,6 +286,15 @@ public class Board extends Canvas implements WindowScript
         }
         keyEvents.clear();
 
+        if(!isTutorial && currentBot != null && goBoard.GetStoneColor() != yourColor)
+        {
+            Position pos = currentBot.MakeMove(new BoardPosition(BOARD_DIMENSION, field), !yourColor);
+            if(pos.pass)
+                Pass();
+            else
+                PlaceStone(pos.x, pos.y, !yourColor);
+        }
+
         objectsHandler.Tick(delta);
         objectsHandler.UpdateMouse(mousePos.x, mousePos.y, msk);
 
@@ -233,10 +319,7 @@ public class Board extends Canvas implements WindowScript
         }
 
         Graphics g = bs.getDrawGraphics();
-
-        Color col = Color.white;
-        g.setColor(col);
-        g.fillRect(0, 0, WIDTH, HEIGHT);
+        g.drawImage(background, 0, 0, null);
 
         objectsHandler.Render(g);
         g.dispose();
@@ -293,8 +376,9 @@ public class Board extends Canvas implements WindowScript
 
     //endregion
 
-    ///------------------------- Go Board Related Operations ------------------------------ ///
+    /// ------------------------ Go Board Related Operations ------------------------------ ///
 
+    //region Go Board
     private float scoreW, scoreB;
     private int prisonersW, prisonersB;
     private ArrayList<BoardMove> gameMoves;
@@ -303,9 +387,54 @@ public class Board extends Canvas implements WindowScript
     private BoardMark[][] boardMarks;
     private LinkedHashSet<BoardPosition> boardPositions;
     private MoveResult[][] preMoves;
+    private boolean isTutorial, yourColor, prevPass = false;
+
+    ArrayList<RenderObject> tutorialMenu;
 
     private int[][] temporaryField;
     private boolean[][] usedFields;
+
+    public void SetTutorial(boolean tut)
+    {
+        if(tut)
+        {
+            for(int i = 0; i < tutorialMenu.size(); i++)
+            {
+                tutorialMenu.get(i).visible = true;
+            }
+            isTutorial = true;
+        }
+        else
+        {
+            for(int i = 0; i < tutorialMenu.size(); i++)
+            {
+                tutorialMenu.get(i).visible = false;
+            }
+            isTutorial = false;
+        }
+        goBoard.SetTutorial(isTutorial);
+    }
+
+    public MoveResult[][] GetMoveResults()
+    {
+        return preMoves;
+    }
+
+    public void Pass()
+    {
+        if(prevPass)
+        {
+            EndGame();
+            return;
+        }
+
+        prevPass = true;
+        if(stonePlacing == StonePlacementType.Alternate)
+            goBoard.SetStoneColor(!goBoard.GetStoneColor());
+
+        UpdatePremoves();
+        UpdateMarks();
+    }
 
     public boolean PlaceStone(int x, int y, boolean col)
     {
@@ -338,15 +467,22 @@ public class Board extends Canvas implements WindowScript
             }
         }
 
+        prevPass = false;
         gameMoves.add(new BoardMove(x, y, col));
         boardPositions.add(new BoardPosition(BOARD_DIMENSION, field));
 
-        goBoard.SetStoneColor(!goBoard.GetStoneColor());
+        if(stonePlacing == StonePlacementType.Alternate)
+            goBoard.SetStoneColor(!goBoard.GetStoneColor());
 
         UpdatePremoves();
         UpdateMarks();
 
         return true;
+    }
+
+    private void EndGame()
+    {
+
     }
 
     public enum MoveResult
@@ -404,6 +540,11 @@ public class Board extends Canvas implements WindowScript
                 res = true;
         }
         return res;
+    }
+
+    public int[][] GetField()
+    {
+        return field;
     }
 
     public MoveResult CanPlaceStone(int x, int y, boolean col)
@@ -537,4 +678,41 @@ public class Board extends Canvas implements WindowScript
             return true;
         return field[x][y] != 0;
     }
+    //endregion
+
+    /// ------------------------- Board Tutorial Related Operations ----------------------- ///
+
+    //region Board Tutorial
+
+    public enum StonePlacementType
+    {
+        Constant, Alternate
+    }
+
+    public StonePlacementType stonePlacing;
+
+    public void SetWhitePlacing()
+    {
+        stonePlacing = StonePlacementType.Constant;
+        goBoard.SetStoneColor(true);
+
+        UpdatePremoves();
+        UpdateMarks();
+    }
+
+    public void SetBlackPlacing()
+    {
+        stonePlacing = StonePlacementType.Constant;
+        goBoard.SetStoneColor(false);
+
+        UpdatePremoves();
+        UpdateMarks();
+    }
+
+    public void SetAlternating()
+    {
+        stonePlacing = StonePlacementType.Alternate;
+    }
+
+    //endregion
 }

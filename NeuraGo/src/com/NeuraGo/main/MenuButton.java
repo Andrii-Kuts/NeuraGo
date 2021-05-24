@@ -13,7 +13,7 @@ public class MenuButton extends RenderObject implements Button
 {
     public enum ButtonColorProfile
     {
-        Default, Red, Yellow, Fade, Black;
+        Default, Red, Yellow, Fade, Black, Transparent, RedSelect;
     }
 
     public float posX, posY, width, height, colorSpeed, roundness;
@@ -32,15 +32,17 @@ public class MenuButton extends RenderObject implements Button
         roundness = 30;
         colorSpeed = 4f;
 
-        idleColor = new DoubleColor(235, 235, 235);
-        hoverColor = new DoubleColor(203, 203, 203);
-        pressedColor = new DoubleColor(171, 171, 171);
-        textColor = new DoubleColor(0, 0, 0);
+        idleColor = new DoubleColor(255, 151, 30);
+        hoverColor = new DoubleColor(211, 125, 25);
+        pressedColor = new DoubleColor(153, 91, 18);
+        textColor = new DoubleColor(52, 19, 38);
 
         text = "Button";
         fontSize = 30;
 
         curColor = destColor = idleColor;
+
+
     }
 
     public MenuButton(float posX, float posY, float width, float height)
@@ -51,10 +53,10 @@ public class MenuButton extends RenderObject implements Button
         roundness = 30;
         colorSpeed = 4f;
 
-        idleColor = new DoubleColor(235, 235, 235);
-        hoverColor = new DoubleColor(212, 212, 212);
-        pressedColor = new DoubleColor(171, 171, 171);
-        textColor = new DoubleColor(0, 0, 0);
+        idleColor = new DoubleColor(255, 151, 30);
+        hoverColor = new DoubleColor(211, 125, 25);
+        pressedColor = new DoubleColor(153, 91, 18);
+        textColor = new DoubleColor(52, 19, 38);
 
         text = "Button";
         fontSize = 30;
@@ -115,33 +117,49 @@ public class MenuButton extends RenderObject implements Button
     {
         if(p == ButtonColorProfile.Default)
         {
-            idleColor = new DoubleColor(235, 235, 235);
-            hoverColor = new DoubleColor(212, 212, 212);
-            pressedColor = new DoubleColor(171, 171, 171);
-            textColor = new DoubleColor(0, 0, 0);
+            idleColor = new DoubleColor(255, 151, 30);
+            hoverColor = new DoubleColor(211, 125, 25);
+            pressedColor = new DoubleColor(153, 91, 18);
+            textColor = new DoubleColor(52, 19, 38);
             return;
         }
         if(p == ButtonColorProfile.Red)
         {
-            idleColor = new DoubleColor(214, 60, 60);
-            hoverColor = new DoubleColor(191, 46, 46);
-            pressedColor = new DoubleColor(156, 28, 28);
-            textColor = new DoubleColor(255, 255, 255);
+            idleColor = new DoubleColor(255, 29, 75);
+            hoverColor = new DoubleColor(208, 24, 61);
+            pressedColor = new DoubleColor(159, 18, 47);
+            textColor = new DoubleColor(255, 200, 136);
             return;
         }
         if(p == ButtonColorProfile.Black)
         {
-            idleColor = new DoubleColor(18, 18, 18);
-            hoverColor = new DoubleColor(36, 36, 36);
-            pressedColor = new DoubleColor(66, 66, 66);
-            textColor = new DoubleColor(255, 255, 255);
+            idleColor = new DoubleColor(77, 29, 55);
+            hoverColor = new DoubleColor(63, 24, 45);
+            pressedColor = new DoubleColor(46, 18, 33);
+            textColor = new DoubleColor(255, 200, 136);
+            return;
+        }
+        if(p == ButtonColorProfile.Transparent)
+        {
+            idleColor = new DoubleColor(0, 0, 0, 0);
+            hoverColor = new DoubleColor(0, 0, 0, 15);
+            pressedColor = new DoubleColor(0, 0, 0, 35);
+            textColor = new DoubleColor(255, 200, 136);
+            return;
+        }
+        if(p == ButtonColorProfile.RedSelect)
+        {
+            idleColor = new DoubleColor(255, 29, 75, 50);
+            hoverColor = new DoubleColor(255, 29, 75, 65);
+            pressedColor = new DoubleColor(255, 29, 75, 80);
+            textColor = new DoubleColor(255, 200, 136);
             return;
         }
     }
 
     public void ResetButtonColor()
     {
-        curColor = idleColor;
+        curColor = destColor = idleColor;
     }
 
     public void Render(Graphics g)
@@ -158,7 +176,8 @@ public class MenuButton extends RenderObject implements Button
         g2d.setColor(curColor.get());
         g2d.fill(rect);
 
-
+        if(text == "")
+            return;
 
         FontRenderContext frc = new FontRenderContext(null, false, false);
         TextLayout tx = new TextLayout(text, new Font("Arial", Font.PLAIN, fontSize), frc);
