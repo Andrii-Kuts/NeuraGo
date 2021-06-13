@@ -1,2 +1,2 @@
 # NeuraGo
-NeuraGo, projekt trzech utalentowanych studentów UJ. 
+NeuraGo, projekt dwóch studentów UJ. 
