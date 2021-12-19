@@ -1,12 +1,8 @@
 package com.NeuraGo.main;
 
-import com.sun.javafx.beans.IDProperty;
-import javafx.scene.shape.Rectangle;
-
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
 public class MenuButton extends RenderObject implements Button
@@ -23,27 +19,6 @@ public class MenuButton extends RenderObject implements Button
     public Runnable action;
 
     private boolean isHovered = false, isPressed = false;
-
-    public MenuButton()
-    {
-        posX = 0; posY = 0;
-        width = height = 100;
-
-        roundness = 30;
-        colorSpeed = 4f;
-
-        idleColor = new DoubleColor(255, 151, 30);
-        hoverColor = new DoubleColor(211, 125, 25);
-        pressedColor = new DoubleColor(153, 91, 18);
-        textColor = new DoubleColor(52, 19, 38);
-
-        text = "Button";
-        fontSize = 30;
-
-        curColor = destColor = idleColor;
-
-
-    }
 
     public MenuButton(float posX, float posY, float width, float height)
     {
@@ -91,28 +66,32 @@ public class MenuButton extends RenderObject implements Button
     {
         isHovered = true;
     }
+
     public void OnMouseLeave()
     {
         isHovered = false;
         isPressed = false;
     }
+
     public void OnClick(float x, float y)
     {
         isPressed = true;
     }
+
     public void OnRelease(float x, float y)
     {
         if(isPressed)
           action.run();
         isPressed = false;
-
     }
+
     public boolean Intersects(float x, float y)
     {
         if(x < posX-width/2f || x > posX+width/2f || y < posY-height/2f || y > posY+height/2f)
             return false;
         return true;
     }
+
     public void SetColors(ButtonColorProfile p)
     {
         if(p == ButtonColorProfile.Default)
@@ -201,4 +180,8 @@ public class MenuButton extends RenderObject implements Button
             destColor = idleColor;
         curColor = Move(curColor, destColor, (double)colorSpeed*delta);
     }
+
+
 }
+
+

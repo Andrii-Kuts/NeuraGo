@@ -13,11 +13,9 @@ public class MenuTemplate extends Canvas implements WindowScript
 
     ArrayList<Runnable> endActions;
 
-
     public MenuTemplate(Window window)
     {
         this.window = window;
-
 
         endActions = new ArrayList<>();
 
@@ -141,12 +139,8 @@ public class MenuTemplate extends Canvas implements WindowScript
             this.createBufferStrategy(3);
             return;
         }
-
         Graphics g = bs.getDrawGraphics();
-
-        Color col = Color.white;
-        g.setColor(col);
-        g.fillRect(0, 0, WIDTH, HEIGHT);
+        //g.drawImage(background, 0, 0, null);
 
         objectsHandler.Render(g);
         g.dispose();
