@@ -39,7 +39,7 @@ public class Stone extends RenderObject
             try {
                 File fl = new File(path);
                 stoneImage = ImageIO.read(fl);
-                stoneImage = stoneImage.getScaledInstance((int)(sz*2+2), (int)(sz*2+2), Image.SCALE_DEFAULT);
+                stoneImage = stoneImage.getScaledInstance((int)(sz*2+2), (int)(sz*2+2), Image.SCALE_SMOOTH);
             }
             catch(Exception e)
             {
@@ -53,7 +53,7 @@ public class Stone extends RenderObject
             try {
                 File fl = new File(path);
                 stoneImage = ImageIO.read(fl);
-                stoneImage = stoneImage.getScaledInstance((int)(sz*2+2), (int)(sz*2+2), Image.SCALE_DEFAULT);
+                stoneImage = stoneImage.getScaledInstance((int)(sz*2+2), (int)(sz*2+2), Image.SCALE_SMOOTH);
             }
             catch(Exception e)
             {
@@ -65,6 +65,7 @@ public class Stone extends RenderObject
     public void setSize(float size)
     {
         sz = size;
+        setCol(color);
     }
 
     public void setTrans(int tr)
@@ -82,9 +83,6 @@ public class Stone extends RenderObject
 
         Composite c = g2d.getComposite();
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)trans/255));
-      //  Ellipse2D.Float el = new Ellipse2D.Float(x-sz, y-sz, sz*2, sz*2);
-      //  g2d.setColor(col);
-      //  g2d.fill(el);
 
         g2d.drawImage(stoneImage, (int)(x-sz), (int)(y-sz), null);
 

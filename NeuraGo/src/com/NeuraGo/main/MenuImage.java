@@ -32,12 +32,22 @@ public class MenuImage extends RenderObject implements Button
         {
             String pth = FileLoader.getPath(path);
             File fl = new File(pth);
-            img = ImageIO.read(fl);
+            Image renderImage = ImageIO.read(fl);
+            img = renderImage.getScaledInstance((int)szX, (int)szY, Image.SCALE_SMOOTH);
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
+    }
+    public void LoadImage(Image img)
+    {
+        this.img = img;
+    }
+
+    public void LoadImage(String path)
+    {
+        LoadImage(path.split("/"));
     }
 
     public void Render(Graphics g)
@@ -59,8 +69,8 @@ public class MenuImage extends RenderObject implements Button
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
 
-        Image renderImage = img.getScaledInstance((int)szX, (int)szY, Image.SCALE_SMOOTH);
-        g.drawImage(renderImage, (int)(posX - szX/2), (int)(posY - szY/2), null);
+
+        g.drawImage(img, (int)(posX - szX/2), (int)(posY - szY/2), null);
     }
 
     public void Tick(double dt)
@@ -92,6 +102,8 @@ public class MenuImage extends RenderObject implements Button
     {
         if(!collidable)
             return false;
+        if(window)
+            return true;
         if(x < posX-szX/2 || x > posX+szX/2 || y < posY-szY/2 || y > posY+szY/2)
             return false;
         return true;

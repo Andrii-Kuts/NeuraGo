@@ -1,5 +1,7 @@
 package com.NeuraGo.main;
 
+import com.NeuraGo.main.testing.NeuralNetworkTests;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -50,14 +52,14 @@ public class Window extends Canvas
         mm.start();
     }
 
-    public void PlayGame(int w, int h, int d, int bot, int col)
+    public void PlayGame(int w, int h, int d, int bot, int bot2, int col, boolean training)
     {
       //  ((WindowScript) comp).stop();
         frame.remove(comp);
 
         frame.getContentPane().setPreferredSize(new Dimension(w, h));
 
-        Board board = new Board(this, w, h, d, bot, col);
+        Board board = new Board(this, w, h, d, bot, bot2, col, training);
         comp = board;
         frame.add(board);
         frame.pack();
@@ -75,6 +77,16 @@ public class Window extends Canvas
         frame.add(mm);
         frame.pack();
         mm.start();
+    }
+
+    public void GoToTest()
+    {
+        frame.remove(comp);
+        NeuralNetworkTests nnt = new NeuralNetworkTests(this);
+        comp = nnt;
+        frame.add(comp);
+        frame.pack();
+        nnt.start();
     }
 
 
