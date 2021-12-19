@@ -9,6 +9,7 @@ public class BoardPosition
 
     private int dimension;
     public byte[][] stones;
+    public boolean color;
 
     public BoardPosition(int dim)
     {
@@ -21,6 +22,12 @@ public class BoardPosition
                 stones[i][j] = 0;
             }
         }
+        color = false;
+    }
+
+    public int getSize()
+    {
+        return dimension;
     }
 
     public BoardPosition(int dim, int[][] values)
@@ -36,6 +43,34 @@ public class BoardPosition
         }
     }
 
+    public BoardPosition(int dim, int[][] values, boolean col)
+    {
+        dimension = dim;
+        stones = new byte[dim][dim];
+        for(int i = 0; i < dim; i++)
+        {
+            for(int j = 0; j < dim; j++)
+            {
+                stones[i][j] = (byte)values[i][j];
+            }
+        }
+        color = col;
+    }
+
+    public BoardPosition(BoardPosition bp)
+    {
+        dimension = bp.getSize();
+        stones = new byte[dimension][dimension];
+        for(int i = 0; i < dimension; i++)
+        {
+            for(int j = 0; j < dimension; j++)
+            {
+                stones[i][j] = bp.stones[i][j];
+            }
+        }
+        color = bp.color;
+    }
+
     @Override
     public int hashCode()
     {
@@ -48,6 +83,8 @@ public class BoardPosition
                 pw *= PW;
             }
         }
+        if(color)
+            res += pw;
         return res;
     }
 
@@ -67,6 +104,8 @@ public class BoardPosition
                     return false;
             }
         }
+        if(color != pos.color)
+            return false;
         return true;
     }
 }
